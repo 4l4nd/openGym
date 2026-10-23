@@ -12,6 +12,7 @@ RUN apk add --no-cache nodejs npm git && \
     chmod -R 777 /data /var/cache/nginx /var/run /run /etc/nginx/conf.d
 
 # Write a direct Nginx config optimized for Render
+# Note the rewrite rule inside location /api/ that strips the prefix
 RUN printf 'server {\n\
     listen 10000;\n\
     server_name _;\n\
@@ -21,7 +22,8 @@ RUN printf 'server {\n\
     location / {\n\
         try_files $uri $uri/ /index.html;\n\
     }\n\
-    location /api {\n\
+    location /api/ {\n\
+        rewrite ^/api/(.*) /$1 break;\n\
         proxy_pass http://127.0.0.1:3000;\n\
         proxy_http_version 1.1;\n\
         proxy_set_header Upgrade $http_upgrade;\n\
